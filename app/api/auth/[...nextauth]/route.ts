@@ -18,12 +18,16 @@ const handler = NextAuth({
                 if (!credentials) {
                     throw new Error("No credentials provided");
                 }
-                console.log("Credentials", credentials); // Debug logging
+                
+                console.log("Credentials provided:", credentials); 
+                
                 const user = await prisma.user.findUnique({
                     where: { 
                         email: credentials.email 
                     }
                 });
+
+                console.log("User retrieved:", user);
 
                 if (user && await bcrypt.compare(credentials.password, user.password)) {
                     console.log("User found and password matched, means loggedin succesfully!!");
@@ -42,6 +46,7 @@ const handler = NextAuth({
     callbacks: {
         async signIn({ user, account }) {
             if (!account) {
+                console.log("No account provided.");
                 return false;
             }
             
@@ -50,15 +55,10 @@ const handler = NextAuth({
                     where: { email: user.email ?? "" }
                 });
 
+                console.log("Existing user retrieved:", existingUser);
+
                 if (!existingUser) {
-                    await prisma.user.create({
-                        data: {
-                            id: user.id,
-                            email: user.email ?? "",
-                            password: "", // Google users don't have a password
-                        },
-                    });
-                    // throw new Error("User not found. Please sign up first.");
+                    throw new Error("User not found. Please sign up first.");
                 }
             }
 
@@ -71,7 +71,7 @@ const handler = NextAuth({
             return token;
         },
         async redirect({ url, baseUrl }) {
-            console.log("Redirect callback:", { url, baseUrl }); // Debug logging
+            // console.log("Redirect callback:", { url, baseUrl }); // Debug logging
             if (url.startsWith(baseUrl)) {
                 return `${baseUrl}/dashboard`;
             }

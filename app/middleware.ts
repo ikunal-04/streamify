@@ -2,7 +2,7 @@ import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 
 export const config = {
-    matcher: ['/dashboard', '/api/dashboard'],
+    matcher: ['/dashboard'],
 }
 
 export default withAuth(async (req) => {
