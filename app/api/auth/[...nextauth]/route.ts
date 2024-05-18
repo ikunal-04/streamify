@@ -14,11 +14,11 @@ const handler = NextAuth({
                 email: { label: "Email", type: "text", placeholder: "jsmith@gmail.com"},
                 password: { label: "Password", type: "password", placeholder: "Password"}
             },
-            async authorize(credentials: Record<"email" | "password", string> | undefined) {
+            async authorize(credentials: Record< "email" | "password", string> | undefined) {
                 if (!credentials) {
                     throw new Error("No credentials provided");
                 }
-                
+                console.log("Credentials", credentials); // Debug logging
                 const user = await prisma.user.findUnique({
                     where: { 
                         email: credentials.email 
@@ -40,7 +40,43 @@ const handler = NextAuth({
         }),
     ],
     callbacks: {
-        
+        async signIn({ user, account }) {
+            if (!account) {
+                return false;
+            }
+            
+            if (account.provider === "google") {
+                const existingUser = await prisma.user.findUnique({
+                    where: { email: user.email ?? "" }
+                });
+
+                if (!existingUser) {
+                    await prisma.user.create({
+                        data: {
+                            id: user.id,
+                            email: user.email ?? "",
+                            password: "", // Google users don't have a password
+                        },
+                    });
+                    // throw new Error("User not found. Please sign up first.");
+                }
+            }
+
+            return true;
+        },
+        async jwt({ token, user }) {
+            if (user) {
+                token.id = user.id;
+            }
+            return token;
+        },
+        async redirect({ url, baseUrl }) {
+            console.log("Redirect callback:", { url, baseUrl }); // Debug logging
+            if (url.startsWith(baseUrl)) {
+                return `${baseUrl}/dashboard`;
+            }
+            return baseUrl;
+        },
     },
     secret: process.env.NEXTAUTH_SECRET,
 })
