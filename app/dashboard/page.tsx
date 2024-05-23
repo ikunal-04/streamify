@@ -2,6 +2,9 @@
 import React from 'react';
 import { useState, useRef } from 'react';
 import { io } from 'socket.io-client';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 
 const socket = io('http://localhost:4000', {
   transports: ['websocket', 'polling'],
@@ -44,11 +47,22 @@ const Dashboard = () => {
   };
 
   return (
-    <div>
-      <input type="text" placeholder='enter your stream key!!' value={streamKey} 
+    <div className='bg-black text-white h-screen p-6'>
+      <div className='flex flex-col gap-4'>
+      <Label>Enter your stream key</Label>
+      <Input type="password" placeholder='Enter your stream key...' value={streamKey} 
         onChange={(e) => setStreamKey(e.target.value)} />
-      <video ref={videoRef} autoPlay muted></video>
-      <button onClick={startStream}>Start Stream</button>
+        <div>
+        <Button onClick={startStream}>Start Stream</Button>
+        </div>
+      </div>
+      
+      <div className='rounded-xl mt-4 flex justify-center'>
+      <video className='rounded-xl' ref={videoRef} autoPlay muted></video>
+      </div>
+
+
+
     </div>
   );
 };
